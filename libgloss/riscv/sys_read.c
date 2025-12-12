@@ -9,5 +9,10 @@ ssize_t _read(int file, void *ptr, size_t len)
   if (file != 0)
     return -1;
 
-  return syscall_errno (SYS_read, 3, file, ptr, len, 0, 0, 0);
+  uint64_t avail = 0; 
+  while (!avail)
+    avail = *((uint64_t *) 0x90000008);
+
+  memcpy(ptr, ((void *) 0x90000010), avail);
+  return avail;
 }
