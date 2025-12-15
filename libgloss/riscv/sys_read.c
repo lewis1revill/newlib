@@ -9,10 +9,16 @@ ssize_t _read(int file, void *ptr, size_t len)
   if (file != 0)
     return -1;
 
-  uint64_t avail = 0; 
-  while (!avail)
-    avail = *((uint64_t *) 0x90000008);
+  static uint64_t total_read = 0;
 
-  memcpy(ptr, ((void *) 0x90000010), avail);
-  return avail;
+  uint64_t avail = *((uint64_t *) 0x90000008);
+  if (avail <= total_read)
+    return -1;
+
+  avail -= total_read;
+  len = avail < len ? avail : len;
+
+  memcpy(ptr, ((void *) (0x90000010 + total_read)), len);
+  total_read += len;
+  return len;
 }
